@@ -790,10 +790,11 @@ GEM
     yaml-lint (0.1.2)
     yard (0.9.44)
     zeitwerk (2.8.2)
-    zendesk_api (1.38.0.rc1)
+    zendesk_api (4.0.0.pre.1)
+      base64
       faraday (> 2.0.0)
       faraday-multipart
-      hashie (>= 3.5.2, < 6.0.0)
+      hashie (>= 3.5.2)
       inflection
       mini_mime
       multipart-post (~> 2.0)
@@ -1009,7 +1010,7 @@ CHECKSUMS
   bootsnap (1.24.5) sha256=36b677448524d279b470469aabd5dff4a980e3fa4931a0df68da4a500eb1b6c4
   builder (3.3.0) sha256=497918d2f9dca528fdca4b88d84e4ef4387256d984b8154e9d5d3fe5a9c8835f
   bullet (8.1.2) sha256=67031a0d71d2b00ef1d6ed17903064d79e56bf2cddb4d4e2c54cd464c6b2b8c9
-  bundler (4.0.11) sha256=5bcec0fb78302e48d02ee46f10ee6e6942be647ba5b44a6d1ddfda9a240ce785
+  bundler (4.0.13) sha256=19f08be7f27022cf0b89f27da0b044ae075e8270a9ef44ad248a932614e1ca3b
   capybara (3.40.0) sha256=42dba720578ea1ca65fd7a41d163dd368502c191804558f6e0f71b391054aeef
   capybara-playwright-driver (0.5.9) sha256=4c17fed20817b7e1bde2cfc8186e7bf5cd72017ce1aa695e35130f8e600e7282
   cbor (0.5.10.2) sha256=df5104f7a62c881123e6505441b1e276208be1771540c2cc3b1de8a210a7c52c
@@ -1327,7 +1328,7 @@ CHECKSUMS
   yaml-lint (0.1.2) sha256=e3960b171766ae187338a169815e99fe10fcb0d9c22b1c539e8d57e114324c8a
   yard (0.9.44) sha256=eb087e9b631ccd887b049f303d489963945452d5e2a7eb49a5a74a7cf6887f28
   zeitwerk (2.8.2) sha256=7212a61311083c604184b1ea2574b9aa05cd14f855a0841c06985cabe9181d12
-  zendesk_api (1.38.0.rc1) sha256=9ebe2575d223ed1c0651b2d10df6c010141cda49d524c38532b472f7e8bb3f7a
+  zendesk_api (4.0.0.pre.1) sha256=18ce566c4731096f2a4812edec3b2f47976fcaf4ad4489011813e36e1b48426f
 
 RUBY VERSION
   ruby 3.4.7p58
