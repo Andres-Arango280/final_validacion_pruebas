@@ -1,5 +1,5 @@
 pipeline {
-    // Cambiamos el agente a 'any' para que no dependa del plugin de Docker
+    // Usamos el agente general 'any' debido a que el entorno corre sobre Windows y llamaremos a Docker manualmente
     agent any
 
     environment {
@@ -9,33 +9,38 @@ pipeline {
     }
 
     stages {
-        stage('Run Everything inside Docker Container') {
+        stage('Docker Test Execution') {
             steps {
-                echo 'Corriendo el contenedor de Ruby e iniciando el flujo completo...'
+                echo 'Iniciando contenedor de Ruby en Windows para ejecutar RSpec...'
                 
-                // Levantamos el contenedor dinámicamente usando comandos SH puros
-                sh """
-                docker run --rm -v \$(pwd):/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "
-                    echo 'Instalando dependencias en el contenedor...' && \
-                    apt-get update -qq && apt-get install -y -qq build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev sed && \
-                    echo 'Instalando gemas...' && \
-                    bundle config set --local deployment 'true' && \
-                    bundle install && \
-                    gem install simplecov-cobertura && \
-                    echo 'Corriendo pruebas...' && \
-                    bundle exec rspec spec/us05_white_box_tests && \
-                    echo 'Ajustando reporte...' && \
-                    rm -f coverage/.resultset.json && \
-                    sed -i 's|/workspace/||g' coverage/coverage.xml
-                "
-                """
+                // Ejecutamos el contenedor compartiendo el workspace actual de Windows hacia el contenedor Linux de Docker
+                // Instalamos dependencias, corremos las pruebas y generamos el XML de cobertura
+                withEnv(["WORKSPACE_DIR=${WORKSPACE.replace('\\', '/')}"]) {
+                    sh """
+                    docker run --rm -v "${WORKSPACE_DIR}":/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "
+                        echo 'Instalando dependencias del sistema...' && \
+                        apt-get update -qq && apt-get install -y -qq build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev sed && \
+                        echo 'Instalando gemas...' && \
+                        bundle config set --local deployment 'true' && \
+                        bundle install && \
+                        gem install simplecov-cobertura && \
+                        echo 'Ejecutando pruebas estructurales RSpec...' && \
+                        bundle exec rspec spec/us05_white_box_tests && \
+                        echo 'Eliminando JSON conflictivo...' && \
+                        rm -f coverage/.resultset.json && \
+                        echo 'Corrigiendo rutas absolutas en el XML de cobertura...' && \
+                        sed -i 's|/workspace/||g' coverage/coverage.xml
+                    "
+                    """
+                }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                echo 'Enviando reporte consolidado a SonarQube...'
-                // El análisis se lanza desde el agente principal apuntando al volumen compartido
+                echo 'Enviando reporte de cobertura corregido a SonarQube...'
+                
+                // Ejecutamos el scanner desde el agente principal apuntando al XML de cobertura procesado
                 sh """
                 sonar-scanner \
                   -Dsonar.host.url="http://localhost:9000" \
@@ -54,8 +59,11 @@ pipeline {
 
     post {
         always {
-            echo 'Limpiando espacio de trabajo...'
-            cleanWs()
+            // El bloque 'node' le da el contexto físico de Windows a Jenkins para evitar fallos de FilePath al limpiar
+            node {
+                echo 'Limpiando el espacio de trabajo de Windows...'
+                cleanWs()
+            }
         }
     }
 }
