@@ -5,12 +5,13 @@ pipeline {
         RAILS_ENV = 'test'
         COVERAGE = '1'
         SONAR_TOKEN = 'squ_b1d6d4cc14eb92247c72d213e9e37f39425aabf9'
+        SONAR_HOST_URL = 'http://localhost:9000'
     }
 
     stages {
         stage('Docker Test Execution') {
             steps {
-                echo 'Iniciando infraestructura de pruebas (Redis + Ruby) en Windows...'
+                echo '🚀 Iniciando infraestructura de pruebas (Redis + Ruby)...'
                 script {
                     def workspaceLinuxPath = WORKSPACE.replace('\\', '/')
                     bat """
@@ -25,21 +26,28 @@ pipeline {
                     """
                 }
             }
+            post {
+                always {
+                    echo '📊 Archivando reportes de cobertura...'
+                    archiveArtifacts artifacts: 'coverage/index.html', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'coverage/coverage.xml', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'coverage/.resultset.json', allowEmptyArchive: true
+                }
+            }
         }
 
-        stage('SonarQube Analysis') {
+        stage('SonarQube Analysis & Quality Gate') {
             steps {
-                echo 'Buscando instalación de SonarQube Scanner...'
+                echo '🔍 Enviando reporte y validando métricas de SonarQube...'
                 script {
-                    // Esto fuerza a Jenkins a buscar la ruta real en el disco de Windows
                     def scannerHome = tool 'SonarScanner'
                     
-                    echo "Enviando reporte de cobertura corregido a SonarQube desde ${scannerHome}..."
+                    echo "Usando SonarScanner desde: ${scannerHome}"
                     
-                    // Ejecutamos usando la ruta absoluta del archivo .bat del scanner
+                    // Al incluir wait=true, este script fallará por sí solo si no pasa el Quality Gate
                     bat """
                     "${scannerHome}\\bin\\sonar-scanner.bat" ^
-                      -Dsonar.host.url="http://localhost:9000" ^
+                      -Dsonar.host.url="${SONAR_HOST_URL}" ^
                       -Dsonar.token="${SONAR_TOKEN}" ^
                       -Dsonar.projectKey="discourse-us05-tests" ^
                       -Dsonar.projectName="Discourse US-05 Tests" ^
@@ -47,8 +55,43 @@ pipeline {
                       -Dsonar.tests="spec" ^
                       -Dsonar.inclusions="app/**/*,lib/**/*,spec/us05_*" ^
                       -Dsonar.sourceEncoding="UTF-8" ^
-                      -Dsonar.ruby.coverage.reportPaths="coverage/coverage.xml"
+                      -Dsonar.ruby.coverage.reportPaths="coverage/coverage.xml" ^
+                      -Dsonar.qualitygate.wait=true ^
+                      -Dsonar.qualitygate.timeout=300
                     """
+                }
+            }
+        }
+
+        stage('Generate Report') {
+            steps {
+                echo '📄 Generando reporte final del pipeline...'
+                script {
+                    def buildStatus = currentBuild.result ?: 'SUCCESS'
+                    
+                    bat """
+                    echo ======================================== > pipeline_report.txt
+                    echo PIPELINE CI/CD - DISCOURSE US-05 >> pipeline_report.txt
+                    echo ======================================== >> pipeline_report.txt
+                    echo Build Number: %BUILD_NUMBER% >> pipeline_report.txt
+                    echo Build Status: ${buildStatus} >> pipeline_report.txt
+                    echo Date: %DATE% %TIME% >> pipeline_report.txt
+                    echo. >> pipeline_report.txt
+                    echo ETAPAS COMPLETADAS: >> pipeline_report.txt
+                    echo ✓ Docker Test Execution >> pipeline_report.txt
+                    echo ✓ SonarQube Analysis ^& Quality Gate >> pipeline_report.txt
+                    echo ✓ Generate Report >> pipeline_report.txt
+                    echo. >> pipeline_report.txt
+                    echo METRICAS: >> pipeline_report.txt
+                    echo - Cobertura: Ver coverage/index.html >> pipeline_report.txt
+                    echo - SonarQube: ${SONAR_HOST_URL} >> pipeline_report.txt
+                    echo ======================================== >> pipeline_report.txt
+                    """
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'pipeline_report.txt', allowEmptyArchive: true
                 }
             }
         }
@@ -56,12 +99,22 @@ pipeline {
 
     post {
         always {
+            echo '🧹 Limpiando recursos...'
             script {
-                echo 'Asegurando limpieza de contenedores residuales de Redis...'
                 bat 'docker stop redis-test-discourse >nul 2>&1 && docker rm redis-test-discourse >nul 2>&1 || ver >nul'
             }
-            echo 'Limpiando el espacio de trabajo en Windows...'
             cleanWs()
+        }
+        success {
+            echo '🎉 PIPELINE COMPLETADO EXITOSAMENTE'
+            echo '✅ Todas las etapas pasaron correctamente'
+        }
+        failure {
+            echo '❌ EL PIPELINE FALLO'
+            echo 'Revisa los logs de cada etapa para identificar el problema'
+        }
+        unstable {
+            echo '⚠️ Pipeline completado con advertencias'
         }
     }
 }
