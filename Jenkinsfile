@@ -22,7 +22,7 @@ pipeline {
                         move sonar-scanner-${SONAR_SCANNER_VERSION}-windows-x64 sonar-scanner
                         del sonar-scanner.zip
                     )
-                    echo ✅ SonarScanner listo en: %SONAR_SCANNER_HOME%
+                    echo SonarScanner listo en: %SONAR_SCANNER_HOME%
                     dir sonar-scanner\\bin
                 """
             }
@@ -38,7 +38,7 @@ pipeline {
                     docker run -d --name redis-test-discourse --network host redis:7-alpine
                     
                     echo "2. Corriendo tests de RSpec con cobertura Cobertura XML..."
-                    docker run --rm --network host -v "${workspaceLinuxPath}":/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "echo '=== Instalando dependencias ===' && apt-get update -qq && apt-get install -y -qq build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev libyaml-dev sed > /dev/null && echo '=== Instalando gemas ===' && bundle config set --local deployment 'true' && bundle install && gem install simplecov-cobertura && echo '=== Configurando SimpleCov para Cobertura XML ===' && cat > spec/simplecov_helper.rb << 'RUBYEOF' && require 'simplecov' && require 'simplecov-cobertura' && SimpleCov.start 'rails' do &&   add_filter '/spec/' &&   add_filter '/config/' &&   add_filter '/vendor/' &&   add_filter '/db/' &&   track_files 'app/**/*.rb' &&   track_files 'lib/**/*.rb' &&   formatter SimpleCov::Formatter::MultiFormatter.new([ &&     SimpleCov::Formatter::HTMLFormatter, &&     SimpleCov::Formatter::CoberturaFormatter &&   ]) && end && RUBYEOF && echo '=== Ejecutando RSpec ===' && bundle exec rspec spec/us05_white_box_tests spec/us05_api_tests spec/us05_regression_tests --format progress && echo '=== Verificando archivos generados ===' && ls -la coverage/ && echo '=== Corrigiendo rutas XML ===' && sed -i 's|/workspace/||g' coverage/coverage.xml 2>/dev/null || echo 'XML no encontrado, generando reporte vacío' && echo '=== Limpieza ===' && rm -f coverage/.resultset.json"
+                    docker run --rm --network host -v "${workspaceLinuxPath}":/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "echo '=== Instalando dependencias ===' && apt-get update -qq && apt-get install -y -qq build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev libyaml-dev sed > /dev/null && echo '=== Instalando gemas ===' && bundle config set --local deployment 'true' && bundle install && gem install simplecov-cobertura && echo '=== Configurando SimpleCov para Cobertura XML ===' && cat > spec/simplecov_helper.rb << 'RUBYEOF' && require 'simplecov' && require 'simplecov-cobertura' && SimpleCov.start 'rails' do &&   add_filter '/spec/' &&   add_filter '/config/' &&   add_filter '/vendor/' &&   add_filter '/db/' &&   track_files 'app/**/*.rb' &&   track_files 'lib/**/*.rb' &&   formatter SimpleCov::Formatter::MultiFormatter.new([ &&     SimpleCov::Formatter::HTMLFormatter, &&     SimpleCov::Formatter::CoberturaFormatter &&   ]) && end && RUBYEOF && echo '=== Ejecutando RSpec ===' && bundle exec rspec spec/us05_white_box_tests spec/us05_api_tests spec/us05_regression_tests --format progress && echo '=== Verificando archivos generados ===' && ls -la coverage/ && echo '=== Corrigiendo rutas XML ===' && sed -i 's|/workspace/||g' coverage/coverage.xml 2>/dev/null || echo 'XML no encontrado, generando reporte vacio' && echo '=== Limpieza ===' && rm -f coverage/.resultset.json"
                     
                     echo "3. Apagando contenedor de Redis..."
                     docker stop redis-test-discourse && docker rm redis-test-discourse
@@ -73,10 +73,10 @@ pipeline {
                       -Dsonar.qualitygate.timeout=300
                     
                     if errorlevel 1 (
-                        echo ❌ SonarQube Analysis FAILED
+                        echo SonarQube Analysis FAILED
                         exit /b 1
                     ) else (
-                        echo ✅ SonarQube Analysis SUCCESS
+                        echo SonarQube Analysis SUCCESS
                     )
                 """
             }
@@ -93,10 +93,10 @@ pipeline {
                     echo Date: %DATE% %TIME% >> pipeline_report.txt
                     echo. >> pipeline_report.txt
                     echo ETAPAS COMPLETADAS: >> pipeline_report.txt
-                    echo ✓ Download SonarScanner >> pipeline_report.txt
-                    echo ✓ Docker Test Execution >> pipeline_report.txt
-                    echo ✓ SonarQube Analysis >> pipeline_report.txt
-                    echo ✓ Quality Gate >> pipeline_report.txt
+                    echo 1. Download SonarScanner >> pipeline_report.txt
+                    echo 2. Docker Test Execution >> pipeline_report.txt
+                    echo 3. SonarQube Analysis >> pipeline_report.txt
+                    echo 4. Quality Gate >> pipeline_report.txt
                     echo ======================================== >> pipeline_report.txt
                     type pipeline_report.txt
                 """
@@ -113,13 +113,13 @@ pipeline {
         always {
             echo '🧹 Limpiando recursos...'
             bat 'docker stop redis-test-discourse >nul 2>&1 && docker rm redis-test-discourse >nul 2>&1 || ver >nul'
-            cleanWs(exclude: ['sonar-scanner/**'])
+            cleanWs()
         }
         success {
             echo '🎉 PIPELINE COMPLETADO EXITOSAMENTE'
         }
         failure {
-            echo '❌ EL PIPELINE FALLÓ - Revisa los logs'
+            echo '❌ EL PIPELINE FALLO - Revisa los logs'
         }
     }
 }
