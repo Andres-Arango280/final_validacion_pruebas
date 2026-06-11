@@ -313,3 +313,9 @@ gem "hashery", require: false
 gem "ttfunk", require: false
 gem "afm", require: false
 gem "pdf-reader", require: false
+
+group :test do
+  gem 'cucumber-rails', require: false
+  gem 'cucumber'
+  gem 'selenium-webdriver'
+end

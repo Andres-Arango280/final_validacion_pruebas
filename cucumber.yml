@@ -1,0 +1,2 @@
+default: --format pretty --tags "not @wip"
+html: --format html --out features_report.html --tags "not @wip"

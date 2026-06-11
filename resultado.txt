@@ -1,0 +1,35 @@
+
+Randomized with seed 27789
+
+Bookmark
+  reminder notifications cleanup
+    deletes reminder notifications when bookmark is destroyed
+    does not delete non-reminder notifications
+    does not delete other user's reminder notifications
+    does not delete reminder notifications for bookmarks with auto_delete_preference when_reminder_sent
+  Validations
+    does not allow a user to create a bookmark for the same record more than once
+    does not allow a user to create a bookmarkable for a type that has not been registered
+    does not allow a user to create a bookmark with only one polymorphic column
+  #cleanup!
+    deletes bookmarks attached via the topic to a deleted topic which has been deleted for > 3 days
+    deletes bookmarks attached via a post to a deleted topic which has been deleted for > 3 days
+    deletes bookmarks attached to a deleted post which has been deleted for > 3 days
+    runs a SyncTopicUserBookmarked job for all deleted bookmark unique topics to make sure topic_user.bookmarked is in sync
+    does not delete bookmarks attached to posts that are not deleted or that have not met the 3 day grace period
+    bookmark limits
+      does not get the bookmark limit error because it is not creating a new bookmark (for users already over the limit)
+      gets the bookmark limit error when creating a new bookmark over the limit
+    #count_per_day
+      respects the category_id option
+      respects the end_date option
+      respects the since_days_ago option
+      respects the start_date option
+      gets the count of bookmarks grouped by date within the last 30 days by default
+      does not include deleted posts or topics
+
+Finished in 25.99 seconds (files took 56.86 seconds to load)
+20 examples, 0 failures
+
+Randomized with seed 27789
+
