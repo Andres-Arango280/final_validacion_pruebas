@@ -12,13 +12,13 @@ pipeline {
             steps {
                 echo 'Iniciando contenedor de Ruby en Windows para ejecutar RSpec...'
                 
-                // Convertimos las barras invertidas de las rutas de Windows a barras inclinadas para Docker
                 script {
+                    // Convierte las barras invertidas de Windows a inclinadas para que Docker no se confunda
                     def workspaceLinuxPath = WORKSPACE.replace('\\', '/')
                     
-                    // Usamos 'bat' en lugar de 'sh' para que sea compatible con el servidor de Windows
+                    // Se incluye libyaml-dev para corregir la compilación de la gema psych
                     bat """
-                    docker run --rm -v "${workspaceLinuxPath}":/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "echo 'Instalando dependencias del sistema...' && apt-get update -qq && apt-get install -y -qq build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev sed && echo 'Instalando gemas...' && bundle config set --local deployment 'true' && bundle install && gem install simplecov-cobertura && echo 'Ejecutando pruebas estructurales RSpec...' && bundle exec rspec spec/us05_white_box_tests && echo 'Eliminando JSON conflictivo...' && rm -f coverage/.resultset.json && echo 'Corrigiendo rutas absolutas en el XML de cobertura...' && sed -i 's|/workspace/||g' coverage/coverage.xml"
+                    docker run --rm -v "${workspaceLinuxPath}":/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "echo 'Instalando dependencias del sistema...' && apt-get update -qq && apt-get install -y -qq build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev libyaml-dev sed && echo 'Instalando gemas...' && bundle config set --local deployment 'true' && bundle install && gem install simplecov-cobertura && echo 'Ejecutando pruebas estructurales RSpec...' && bundle exec rspec spec/us05_white_box_tests && echo 'Eliminando JSON conflictivo...' && rm -f coverage/.resultset.json && echo 'Corrigiendo rutas absolutas en el XML de cobertura...' && sed -i 's|/workspace/||g' coverage/coverage.xml"
                     """
                 }
             }
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 echo 'Enviando reporte de cobertura corregido a SonarQube...'
                 
-                // Usamos 'bat' para arrancar el scanner en Windows
+                // Análisis nativo desde Windows hacia tu SonarQube local (localhost:9000)
                 bat """
                 sonar-scanner ^
                   -Dsonar.host.url="http://localhost:9000" ^
