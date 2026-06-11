@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Script de arranque de desarrollo (ruta alternativa cuando Pitchfork falla)
+# Uso: bash bin/dev_server    (o chmod +x bin/dev_server && ./bin/dev_server)
+
+cd "$(dirname "$0")/.."
+
+echo "Iniciando Discourse (fallback Puma) en http://127.0.0.1:4200"
+
+# Forzar el modo de fallback: deshabilita promociones 'mold' en Pitchfork si está presente
+# Si esto provoca OOM (exit 137), inténtalo sin DISABLE_MOLD o ajusta recursos.
+DISABLE_MOLD=1 RAILS_ENV=development bundle exec rails server -p 4200 -b 127.0.0.1

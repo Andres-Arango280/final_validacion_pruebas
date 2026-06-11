@@ -27,3 +27,12 @@
 *.PDF  diff=astextplain
 *.rtf  diff=astextplain
 *.RTF  diff=astextplain
+
+* text=auto eol=lf
+
+*.rb text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.sh text eol=lf
