@@ -1,5 +1,5 @@
 pipeline {
-    // Usamos el agente general 'any' debido a que el entorno corre sobre Windows y llamaremos a Docker manualmente
+    // Le dice a Jenkins que use el agente de Windows disponible para todo el flujo
     agent any
 
     environment {
@@ -13,8 +13,7 @@ pipeline {
             steps {
                 echo 'Iniciando contenedor de Ruby en Windows para ejecutar RSpec...'
                 
-                // Ejecutamos el contenedor compartiendo el workspace actual de Windows hacia el contenedor Linux de Docker
-                // Instalamos dependencias, corremos las pruebas y generamos el XML de cobertura
+                // Reemplazamos las barras invertidas de Windows para evitar conflictos en el volumen de Docker
                 withEnv(["WORKSPACE_DIR=${WORKSPACE.replace('\\', '/')}"]) {
                     sh """
                     docker run --rm -v "${WORKSPACE_DIR}":/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "
@@ -40,7 +39,6 @@ pipeline {
             steps {
                 echo 'Enviando reporte de cobertura corregido a SonarQube...'
                 
-                // Ejecutamos el scanner desde el agente principal apuntando al XML de cobertura procesado
                 sh """
                 sonar-scanner \
                   -Dsonar.host.url="http://localhost:9000" \
@@ -59,11 +57,9 @@ pipeline {
 
     post {
         always {
-            // El bloque 'node' le da el contexto físico de Windows a Jenkins para evitar fallos de FilePath al limpiar
-            node {
-                echo 'Limpiando el espacio de trabajo de Windows...'
-                cleanWs()
-            }
+            echo 'Limpiando el espacio de trabajo en Windows...'
+            // Limpieza directa y segura bajo el contexto de 'agent any'
+            cleanWs()
         }
     }
 }
