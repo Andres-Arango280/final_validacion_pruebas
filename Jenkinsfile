@@ -1,55 +1,41 @@
 pipeline {
-    agent {
-        docker {
-            image 'ruby:3.4.9-slim'
-            args '-u root:root'
-        }
-    }
+    // Cambiamos el agente a 'any' para que no dependa del plugin de Docker
+    agent any
 
     environment {
         RAILS_ENV = 'test'
         COVERAGE = '1'
         SONAR_TOKEN = 'squ_b1d6d4cc14eb92247c72d213e9e37f39425aabf9'
-        BUNDLE_PATH = "vendor/bundle"
     }
 
     stages {
-        stage('Prepare Environment') {
+        stage('Run Everything inside Docker Container') {
             steps {
-                echo 'Instalando dependencias del sistema dentro de Docker...'
-                sh '''
-                    apt-get update -qq && apt-get install -y -qq \
-                    build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev sed
-                '''
-            }
-        }
-
-        stage('Install Gem Dependencies') {
-            steps {
-                echo 'Instalando gemas del proyecto...'
-                sh 'bundle config set --local deployment "true"'
-                sh 'bundle install'
-                sh 'gem install simplecov-cobertura'
-            }
-        }
-
-        stage('Run White Box Tests') {
-            steps {
-                echo 'Ejecutando pruebas estructurales RSpec...'
-                sh 'bundle exec rspec spec/us05_white_box_tests'
-            }
-        }
-
-        stage('Fix Coverage Paths & Scan') {
-            steps {
-                echo 'Corrigiendo rutas del XML y enviando a SonarQube...'
-                // Borramos el JSON conflictivo
-                sh 'rm -f coverage/.resultset.json'
+                echo 'Corriendo el contenedor de Ruby e iniciando el flujo completo...'
                 
-                // Truco del sed dinámico: adapta las rutas de Docker a lo que espera SonarQube
-                sh "sed -i 's|'\$(pwd)'/||g' coverage/coverage.xml"
-                
-                // Ejecutamos el scanner
+                // Levantamos el contenedor dinámicamente usando comandos SH puros
+                sh """
+                docker run --rm -v \$(pwd):/workspace -w /workspace -e RAILS_ENV=test -e COVERAGE=1 ruby:3.4.9-slim sh -c "
+                    echo 'Instalando dependencias en el contenedor...' && \
+                    apt-get update -qq && apt-get install -y -qq build-essential git nodejs libpq-dev sqlite3 libsqlite3-dev sed && \
+                    echo 'Instalando gemas...' && \
+                    bundle config set --local deployment 'true' && \
+                    bundle install && \
+                    gem install simplecov-cobertura && \
+                    echo 'Corriendo pruebas...' && \
+                    bundle exec rspec spec/us05_white_box_tests && \
+                    echo 'Ajustando reporte...' && \
+                    rm -f coverage/.resultset.json && \
+                    sed -i 's|/workspace/||g' coverage/coverage.xml
+                "
+                """
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Enviando reporte consolidado a SonarQube...'
+                // El análisis se lanza desde el agente principal apuntando al volumen compartido
                 sh """
                 sonar-scanner \
                   -Dsonar.host.url="http://localhost:9000" \
@@ -68,7 +54,7 @@ pipeline {
 
     post {
         always {
-            echo 'Limpiando el espacio de trabajo en Jenkins...'
+            echo 'Limpiando espacio de trabajo...'
             cleanWs()
         }
     }
