@@ -1,3 +1,4 @@
+require_relative "simplecov_helper"
 # frozen_string_literal: true
 
 if ENV["COVERAGE"]

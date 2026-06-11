@@ -319,3 +319,4 @@ group :test do
   gem 'cucumber'
   gem 'selenium-webdriver'
 end
+gem "simplecov-cobertura", require: false, group: :test

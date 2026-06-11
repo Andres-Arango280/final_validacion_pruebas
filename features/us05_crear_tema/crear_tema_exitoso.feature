@@ -44,5 +44,5 @@ Característica: Crear un nuevo tema en una categoría
       | titulo                                          | resultado              |
       | Título exactamente quince caracteres            | tema creado            |
       | Título de dieciséis caracteres válido           | tema creado            |
-      | Título muy corto                                | error de validación    |
+      | Título corto                                | error de validación    |
       

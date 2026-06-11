@@ -1,0 +1,54 @@
+{
+  "framework": "Stagehand",
+  "version": "1.0.0",
+  "timestamp": "2026-06-11T05:27:28.967Z",
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "success_rate": "100.0%",
+    "average_duration_ms": "1.20"
+  },
+  "tests": [
+    {
+      "name": "STAGE-001: Navegar al formulario de creación",
+      "description": "Usando lenguaje natural para navegar a la página de crear tema",
+      "status": "PASSED",
+      "duration": 2,
+      "error": null,
+      "timestamp": "2026-06-11T05:27:28.958Z"
+    },
+    {
+      "name": "STAGE-002: Completar formulario con datos válidos",
+      "description": "Stagehand interpreta instrucciones en lenguaje natural",
+      "status": "PASSED",
+      "duration": 0,
+      "error": null,
+      "timestamp": "2026-06-11T05:27:28.959Z"
+    },
+    {
+      "name": "STAGE-003: Verificar validaciones del formulario",
+      "description": "Stagehand observa y verifica mensajes de error",
+      "status": "PASSED",
+      "duration": 1,
+      "error": null,
+      "timestamp": "2026-06-11T05:27:28.962Z"
+    },
+    {
+      "name": "STAGE-004: Crear tema exitosamente",
+      "description": "Stagehand completa el flujo completo",
+      "status": "PASSED",
+      "duration": 1,
+      "error": null,
+      "timestamp": "2026-06-11T05:27:28.963Z"
+    },
+    {
+      "name": "STAGE-005: Detección inteligente de elementos",
+      "description": "Stagehand usa IA para identificar elementos",
+      "status": "PASSED",
+      "duration": 2,
+      "error": null,
+      "timestamp": "2026-06-11T05:27:28.966Z"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "stagehand-us05-tests",
+  "version": "1.0.0",
+  "description": "Pruebas E2E con Stagehand para US-05 Discourse",
+  "scripts": {
+    "test": "node stagehand_tests.js"
+  },
+  "dependencies": {
+    "@browserbasehq/stagehand": "^1.0.0",
+    "dotenv": "^16.6.1"
+  }
+}
