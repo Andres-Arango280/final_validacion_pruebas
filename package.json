@@ -11,7 +11,7 @@
     "@glint/tsserver-plugin": "^2.4.0",
     "@rdil/parallel-prettier": "^3.0.0",
     "concurrently": "^9.2.1",
-    "cypress": "^15.16.0",
+    "cypress": "^15.17.0",
     "eslint": "9.39.2",
     "execa": "^9.6.0",
     "jsdoc": "^4.0.5",
